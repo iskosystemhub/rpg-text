@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DM Chat Screen</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.5.4/socket.io.js"></script>
+</head>
+<body>
+  <!-- Back/Logout button -->
+  <a href="/logout">Back to Login</a>
+  
+  <h2>Welcome, DM: {{ dm_name }}!</h2>
+
+  <!-- NPC Management Section -->
+  <h3>Manage NPCs</h3>
+  <ul>
+    {% for npc in npc_names %}
+      <li>{{ npc }}</li>
+    {% endfor %}
+  </ul>
+  <form action="/add_npc" method="POST">
+    <input type="text" name="npc_name" placeholder="Enter new NPC name">
+    <button type="submit">Add NPC</button>
+  </form>
+
+  <hr>
+
+  <!-- Speaker selection -->
+  <label for="speaker">Speak as: </label>
+  <select id="speaker">
+    <option value="{{ dm_name }}">DM ({{ dm_name }})</option>
+    {% for npc in npc_names %}
+      <option value="{{ npc }}">{{ npc }}</option>
+    {% endfor %}
+  </select>
+
+  <div id="chat" style="border: 1px solid #ccc; height: 300px; overflow-y: scroll;"></div>
+  <input type="text" id="message" placeholder="Type a message..." autofocus>
+  <button onclick="sendMessage()">Send</button>
+
+  <script>
+    const socket = io();
+
+    // Load previous messages
+    fetch('/messages')
+      .then(response => response.json())
+      .then(data => {
+        data.forEach(item => {
+          let chat = document.getElementById('chat');
+          let messageElement = document.createElement('p');
+          messageElement.textContent = `${item.sender}: ${item.message}`;
+          chat.appendChild(messageElement);
+        });
+      });
+
+    function sendMessage() {
+      const speaker = document.getElementById('speaker').value;
+      const input = document.getElementById('message');
+      const msg = input.value;
+      if (msg.trim() !== '') {
+        // Prepend the chosen speaker to the message.
+        const fullMsg = speaker + ": " + msg;
+        socket.send(fullMsg);
+        input.value = '';
+      }
+    }
+
+    // Send on Enter key press
+    document.getElementById('message').addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') {
+        sendMessage();
+      }
+    });
+
+    socket.on('message', function(msg) {
+      let chat = document.getElementById('chat');
+      let messageElement = document.createElement('p');
+      messageElement.textContent = msg;
+      chat.appendChild(messageElement);
+      // Auto-scroll to the bottom
+      chat.scrollTop = chat.scrollHeight;
+    });
+  </script>
+</body>
+</html>

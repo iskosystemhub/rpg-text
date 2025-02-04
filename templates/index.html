@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RPG Chat Login</title>
+</head>
+<body>
+  <h2>Welcome to RPG Chat</h2>
+
+  <!-- Player Login (only username needed) -->
+  <h3>Login as Player</h3>
+  <form action="/login" method="POST">
+    <input type="text" name="username" placeholder="Enter your player name" required>
+    <button type="submit">Login as Player</button>
+  </form>
+
+  <hr>
+
+  <!-- DM Login (username & password) -->
+  <h3>Login as DM</h3>
+  <form action="/login" method="POST">
+    <input type="text" name="username" placeholder="Enter DM username" required>
+    <input type="password" name="password" placeholder="Enter DM password" required>
+    <button type="submit">Login as DM</button>
+  </form>
+</body>
+</html>

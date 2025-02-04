@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Player Chat Screen</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.5.4/socket.io.js"></script>
+</head>
+<body>
+  <!-- Back/Logout button -->
+  <a href="/logout">Back to Login</a>
+  
+  <h2>Welcome, {{ player_name }}!</h2>
+  <div id="chat" style="border: 1px solid #ccc; height: 300px; overflow-y: scroll;"></div>
+  
+  <input type="text" id="message" placeholder="Type a message..." autofocus>
+  <button onclick="sendMessage()">Send</button>
+
+  <script>
+    const socket = io();
+
+    // Load previous messages
+    fetch('/messages')
+      .then(response => response.json())
+      .then(data => {
+        data.forEach(item => {
+          let chat = document.getElementById('chat');
+          let messageElement = document.createElement('p');
+          messageElement.textContent = `${item.sender}: ${item.message}`;
+          chat.appendChild(messageElement);
+        });
+      });
+
+    function sendMessage() {
+      const input = document.getElementById('message');
+      const msg = input.value;
+      if (msg.trim() !== '') {
+        // For players, the backend will prepend the player's name
+        socket.send(msg);
+        input.value = '';
+      }
+    }
+
+    // Send on Enter key press
+    document.getElementById('message').addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') {
+        sendMessage();
+      }
+    });
+
+    socket.on('message', function(msg) {
+      let chat = document.getElementById('chat');
+      let messageElement = document.createElement('p');
+      messageElement.textContent = msg;
+      chat.appendChild(messageElement);
+      // Auto-scroll to the bottom
+      chat.scrollTop = chat.scrollHeight;
+    });
+  </script>
+</body>
+</html>
